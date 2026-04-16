@@ -5,7 +5,6 @@ import { Search } from "lucide-react";
 import { fetchSiteFeed } from "@/lib/site-connector";
 import { buildPostUrl, getPostTaskKey } from "@/lib/task-data";
 import { getMockPostsForTask } from "@/lib/mock-posts";
-import { SITE_CONFIG } from "@/lib/site-config";
 import { TaskPostCard } from "@/components/shared/task-post-card";
 
 export const revalidate = 3;
@@ -42,7 +41,7 @@ export default async function SearchPage({
       ? feed.posts
       : useMaster
         ? []
-        : SITE_CONFIG.tasks.flatMap((task) => getMockPostsForTask(task.key));
+        : getMockPostsForTask("article");
 
   const filtered = posts.filter((post) => {
     const content = post.content && typeof post.content === "object" ? post.content : {};
@@ -68,15 +67,17 @@ export default async function SearchPage({
     );
   });
 
-  const results = normalized.length > 0 ? filtered : filtered.slice(0, 24);
+  const articlePosts = filtered.filter((post) => getPostTaskKey(post) === "article");
+  const results = normalized.length > 0 ? articlePosts : articlePosts.slice(0, 24);
 
   return (
     <PageShell
+      eyebrow="Article archive"
       title="Search"
       description={
         query
-          ? `Results for "${query}"`
-          : "Browse the latest posts across every task."
+          ? `Article results for “${query}”`
+          : "Search headlines, summaries, and tags across published articles only."
       }
       actions={
         <form action="/search" className="flex w-full gap-2 sm:w-auto">
@@ -88,7 +89,7 @@ export default async function SearchPage({
             <Input
               name="q"
               defaultValue={query}
-              placeholder="Search across tasks..."
+              placeholder="Search articles…"
               className="h-11 pl-9"
             />
           </div>
@@ -100,15 +101,13 @@ export default async function SearchPage({
     >
       {results.length ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((post) => {
-            const task = getPostTaskKey(post);
-            const href = task ? buildPostUrl(task, post.slug) : `/posts/${post.slug}`;
-            return <TaskPostCard key={post.id} post={post} href={href} />;
-          })}
+          {results.map((post) => (
+            <TaskPostCard key={post.id} post={post} href={buildPostUrl("article", post.slug)} taskKey="article" />
+          ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-          No matching posts yet.
+        <div className="rounded-md border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
+          No matching articles yet. Try another keyword or browse the latest on the Articles page.
         </div>
       )}
     </PageShell>

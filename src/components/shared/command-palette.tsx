@@ -1,24 +1,18 @@
 ﻿'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command'
 import { useToast } from '@/components/ui/use-toast'
-import { FileText, Plus, Tag, Bookmark, Settings, Search } from 'lucide-react'
+import { FileText, Plus, Search, Home } from 'lucide-react'
 
 const quickLinks = [
-  { label: 'Go to Social Bookmarks', href: '/sbm', icon: Bookmark },
-  { label: 'Go to Articles', href: '/articles', icon: FileText },
-  { label: 'Go to Listings', href: '/listings', icon: Tag },
-  { label: 'Go to Settings', href: '/settings', icon: Settings },
+  { label: 'Home', href: '/', icon: Home },
+  { label: 'Articles', href: '/articles', icon: FileText },
+  { label: 'Search', href: '/search', icon: Search },
 ]
 
-const createActions = [
-  { label: 'Create Article', href: '/create/article', icon: Plus },
-  { label: 'Create Listing', href: '/create/listing', icon: Plus },
-  { label: 'Create Classified', href: '/create/classified', icon: Plus },
-  { label: 'Submit Bookmark', href: '/create/sbm', icon: Plus },
-]
+const createActions = [{ label: 'Create Article', href: '/create/article', icon: Plus }]
 
 export function CommandPalette() {
   const router = useRouter()
@@ -35,8 +29,6 @@ export function CommandPalette() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
-
-  const allItems = useMemo(() => [...quickLinks, ...createActions], [])
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen} title="Command Palette" description="Search for a command to run...">
@@ -76,7 +68,7 @@ export function CommandPalette() {
         <CommandGroup heading="Quick">
           <CommandItem
             onSelect={() => {
-              toast({ title: 'Search opened', description: 'Use the hero search or /search page.' })
+              toast({ title: 'Search', description: 'Opening the article search page.' })
               router.push('/search')
               setOpen(false)
             }}

@@ -2,10 +2,10 @@ import type { TaskKey } from '@/lib/site-config'
 
 export const siteContent = {
   navbar: {
-    tagline: 'Independent editorial publication',
+    tagline: 'Technology articles & analysis',
   },
   footer: {
-    tagline: 'Articles, features, and thoughtful publishing',
+    tagline: 'Reading-first technology publication',
   },
   hero: {
     badge: 'Editorial technology briefs',
@@ -29,42 +29,42 @@ export const siteContent = {
   },
   home: {
     metadata: {
-      title: 'Stories, visuals, and discoverable content',
+      title: 'Technology articles, guides, and opinion',
       description:
-        'Explore articles, images, listings, and curated posts through a cleaner reading-first experience.',
-      openGraphTitle: 'Stories, visuals, and discoverable content',
+        'Long-form reporting, explainers, and editorial analysis in a calm reading layout built for subscribers and casual readers alike.',
+      openGraphTitle: 'Technology articles, guides, and opinion',
       openGraphDescription:
-        'Discover articles, visual posts, and connected content through a calmer reading-first experience.',
-      keywords: ['story platform', 'article site', 'visual content', 'content discovery'],
+        'Discover in-depth technology stories, practical guides, and editorial takes with clear typography and generous spacing.',
+      keywords: ['technology articles', 'editorial', 'tech news', 'guides', 'long-form'],
     },
-    introBadge: 'About the platform',
-    introTitle: 'Built for reading, browsing, and connecting different kinds of content.',
+    introBadge: 'About the publication',
+    introTitle: 'An article-first desk for technology readers.',
     introParagraphs: [
-      'This site brings together article-style reading, visual browsing, and structured discovery so visitors can move naturally between different content types.',
-      'Instead of separating stories, visuals, and supporting resources into disconnected surfaces, the platform keeps them connected in one place with consistent navigation and easier exploration.',
-      'Whether someone starts with a story, an image-led post, a listing, or a resource page, they can keep discovering related content without friction.',
+      'We publish essays, explainers, and analysis with a corporate editorial rhythm: strong headlines, trustworthy tone, and layouts tuned for reading.',
+      'Every page keeps navigation simple so you can scan the latest work, open a cover story, or search the archive without wading through unrelated product lanes.',
+      'Create a free account to save articles and sync preferences in this browser—no change to how the underlying feed or CMS behaves.',
     ],
     sideBadge: 'At a glance',
     sidePoints: [
-      'Reading-first homepage with stronger emphasis on stories and imagery.',
-      'Connected sections for articles, visuals, listings, and supporting resources.',
-      'Cleaner browsing rhythm designed to make exploration feel easier.',
-      'Lightweight interactions that keep the experience fast and readable.',
+      'Blue-and-white visual system inspired by premium logistics and enterprise sites.',
+      'Hero, cover story, and latest grid tuned for article discovery.',
+      'Responsive navigation with a clear Login entry point.',
+      'Lightweight motion and CSS-first styling for fast loads.',
     ],
     primaryLink: {
       label: 'Browse articles',
       href: '/articles',
     },
     secondaryLink: {
-      label: 'See visuals',
-      href: '/images',
+      label: 'Search archive',
+      href: '/search',
     },
   },
   cta: {
-    badge: 'Start exploring',
-    title: 'Explore articles, visuals, and resources through one connected experience.',
+    badge: 'Start reading',
+    title: 'Follow the stories that shape how you think about technology.',
     description:
-      'Move between articles, image-led posts, listings, and resources through one clearer and more connected visual system.',
+      'Open the article index, save what matters, and return anytime—the same navigation and typography carry through every page.',
     primaryCta: {
       label: 'Get Started Free',
       href: '/register',
@@ -127,16 +127,14 @@ export const taskIntroCopy: Record<
     ],
   },
   article: {
-    title: 'Articles, stories, and long-form reading',
+    title: 'From the desk',
     paragraphs: [
-      'This section is built for stories, explainers, guides, and long-form reading across topics and interests.',
-      'Articles connect with listings, images, resources, and other content types so deeper reading can lead naturally into related discovery.',
-      'Use this section to browse thoughtful posts, revisit useful writing, and move into supporting content when you want more context.',
+      'Long-form essays, explainers, and analysis in a layout tuned for reading—clear hierarchy, generous spacing, and the same blue editorial accents as individual stories.',
+      'Use the category filter to narrow topics, then open any card below for the full article layout with typography tuned for extended reading.',
     ],
     links: [
-      { label: 'Explore listings', href: '/listings' },
-      { label: 'Open images', href: '/images' },
-      { label: 'Browse resources', href: '/pdf' },
+      { label: 'Search archive', href: '/search' },
+      { label: 'Back to home', href: '/' },
     ],
   },
   classified: {
