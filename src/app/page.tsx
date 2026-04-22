@@ -101,14 +101,17 @@ function getDirectoryTone(brandPack: string) {
 
 function getEditorialTone() {
   return {
-    shell: 'bg-[#fbf6ee] text-[#241711]',
-    panel: 'border border-[#dcc8b7] bg-[#fffdfa] shadow-[0_24px_60px_rgba(77,47,27,0.08)]',
-    soft: 'border border-[#e6d6c8] bg-[#fff4e8]',
-    muted: 'text-[#6e5547]',
-    title: 'text-[#241711]',
-    badge: 'bg-[#241711] text-[#fff1e2]',
-    action: 'bg-[#241711] text-[#fff1e2] hover:bg-[#3a241b]',
-    actionAlt: 'border border-[#dcc8b7] bg-transparent text-[#241711] hover:bg-[#f5e7d7]',
+    shell: 'bg-slate-50 text-slate-900',
+    heroBand: 'bg-[#0047AB] text-white',
+    panel: 'rounded-md border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.06)]',
+    soft: 'rounded-md border border-slate-200 bg-slate-50',
+    muted: 'text-slate-600',
+    title: 'text-slate-900',
+    badge: 'rounded-md bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white',
+    action:
+      'inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-[#0047AB] shadow-sm transition-colors hover:bg-slate-100',
+    actionAlt:
+      'inline-flex items-center gap-2 rounded-md border border-white/35 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/15',
   }
 }
 
@@ -268,75 +271,120 @@ function DirectoryHome({ primaryTask, enabledTasks, listingPosts, classifiedPost
   )
 }
 
-function EditorialHome({ primaryTask, articlePosts, supportTasks }: { primaryTask?: EnabledTask; articlePosts: SitePost[]; supportTasks: EnabledTask[] }) {
+function EditorialHome({ primaryTask, articlePosts, supportTasks: _supportTasks }: { primaryTask?: EnabledTask; articlePosts: SitePost[]; supportTasks: EnabledTask[] }) {
   const tone = getEditorialTone()
   const lead = articlePosts[0]
   const side = articlePosts.slice(1, 5)
+  const gridPosts = articlePosts.slice(lead ? 1 : 0, 10)
 
   return (
     <main className={tone.shell}>
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-          <div>
-            <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] ${tone.badge}`}>
-              <FileText className="h-3.5 w-3.5" />
-              Reading-first publication
-            </span>
-            <h1 className={`mt-6 max-w-4xl text-5xl font-semibold tracking-[-0.06em] sm:text-6xl ${tone.title}`}>
-              Essays, analysis, and slower reading designed like a publication, not a dashboard.
-            </h1>
-            <p className={`mt-6 max-w-2xl text-base leading-8 ${tone.muted}`}>{SITE_CONFIG.description}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={primaryTask?.route || '/articles'} className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold ${tone.action}`}>
-                Start reading
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href="/about" className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold ${tone.actionAlt}`}>
-                About the publication
-              </Link>
-            </div>
+      <section className={tone.heroBand}>
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <span className={tone.badge}>Independent technology publication</span>
+          <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-[2.75rem]">
+            Trusted reporting, explainers, and opinion—structured for focused reading.
+          </h1>
+          <p className="mt-6 max-w-2xl text-base leading-8 text-white/90">{SITE_CONFIG.description}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={primaryTask?.route || '/articles'} className={tone.action}>
+              Browse articles
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href="/search" className={tone.actionAlt}>
+              Search the library
+            </Link>
           </div>
-
-          <aside className={`rounded-[2rem] p-6 ${tone.panel}`}>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] opacity-70">Inside this issue</p>
-            <div className="mt-5 space-y-5">
-              {side.map((post) => (
-                <Link key={post.id} href={`/articles/${post.slug}`} className="block border-b border-black/10 pb-5 last:border-b-0 last:pb-0">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] opacity-60">Feature</p>
-                  <h3 className="mt-2 text-xl font-semibold">{post.title}</h3>
-                  <p className={`mt-2 text-sm leading-7 ${tone.muted}`}>{post.summary || 'Long-form perspective with a calmer reading rhythm.'}</p>
-                </Link>
-              ))}
-            </div>
-          </aside>
         </div>
+      </section>
 
-        {lead ? (
-          <div className={`mt-12 overflow-hidden rounded-[2.5rem] ${tone.panel}`}>
-            <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
-              <div className="relative min-h-[360px] overflow-hidden">
-                <ContentImage src={getPostImage(lead)} alt={lead.title} fill className="object-cover" />
-              </div>
-              <div className="p-8 lg:p-10">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] opacity-70">Lead story</p>
-                <h2 className="mt-4 text-4xl font-semibold tracking-[-0.04em]">{lead.title}</h2>
-                <p className={`mt-4 text-sm leading-8 ${tone.muted}`}>{lead.summary || 'A more deliberate lead story surface with room for a proper narrative setup.'}</p>
-                <Link href={`/articles/${lead.slug}`} className={`mt-8 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold ${tone.action}`}>
-                  Read article
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+          <div className="grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:items-start">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Editorial focus</p>
+              <h2 className={`mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl ${tone.title}`}>
+                Long-form articles with clear hierarchy, generous spacing, and a calm corporate rhythm.
+              </h2>
+              <p className={`mt-5 max-w-xl text-base leading-8 ${tone.muted}`}>
+                We prioritize depth over noise: technology news, guides, and analysis in a layout built for scanning titles and settling into a story.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/about" className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
+                  About us
+                </Link>
+                <Link href="/press" className="inline-flex items-center gap-2 text-sm font-semibold text-[#0047AB] underline-offset-4 hover:underline">
+                  Press & media
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
-          </div>
-        ) : null}
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {supportTasks.slice(0, 3).map((task) => (
-            <Link key={task.key} href={task.route} className={`rounded-[1.8rem] p-6 ${tone.soft}`}>
-              <h3 className="text-xl font-semibold">{task.label}</h3>
-              <p className={`mt-3 text-sm leading-7 ${tone.muted}`}>{task.description}</p>
+            <aside className={`p-6 lg:p-8 ${tone.panel}`}>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Recently updated</p>
+              <div className="mt-5 space-y-5">
+                {side.length ? (
+                  side.map((post) => (
+                    <Link key={post.id} href={`/articles/${post.slug}`} className="block border-b border-slate-100 pb-5 last:border-b-0 last:pb-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Article</p>
+                      <h3 className="mt-1.5 text-lg font-semibold text-slate-900">{post.title}</h3>
+                      <p className={`mt-2 line-clamp-2 text-sm leading-6 ${tone.muted}`}>{post.summary || 'Analysis and reporting with room for context.'}</p>
+                    </Link>
+                  ))
+                ) : (
+                  <p className={`text-sm ${tone.muted}`}>New stories will appear here as soon as they are published.</p>
+                )}
+              </div>
+            </aside>
+          </div>
+
+          {lead ? (
+            <div className={`mt-12 overflow-hidden ${tone.panel}`}>
+              <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
+                <div className="relative min-h-[300px] overflow-hidden lg:min-h-[380px]">
+                  <ContentImage src={getPostImage(lead)} alt={lead.title} fill className="object-cover" />
+                </div>
+                <div className="flex flex-col justify-center p-8 lg:p-10">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Cover story</p>
+                  <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{lead.title}</h2>
+                  <p className={`mt-4 text-sm leading-7 sm:text-base sm:leading-8 ${tone.muted}`}>
+                    {lead.summary || 'Our lead feature is designed for a strong first read with space for context and follow-up links.'}
+                  </p>
+                  <Link
+                    href={`/articles/${lead.slug}`}
+                    className="mt-8 inline-flex w-fit items-center gap-2 rounded-md bg-[#0047AB] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#003a8f]"
+                  >
+                    Read full article
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-14 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Reading list</p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Latest articles</h2>
+            </div>
+            <Link href="/articles" className="inline-flex items-center gap-2 text-sm font-semibold text-[#0047AB] hover:underline">
+              View all
+              <ArrowRight className="h-4 w-4" />
             </Link>
-          ))}
+          </div>
+          {gridPosts.length ? (
+            <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {gridPosts.map((post) => (
+                <TaskPostCard key={post.id} post={post} href={`/articles/${post.slug}`} taskKey="article" />
+              ))}
+            </div>
+          ) : (
+            <p className={`mt-10 text-center text-sm ${tone.muted}`}>Articles will show in this grid when content is available from the feed.</p>
+          )}
         </div>
       </section>
     </main>

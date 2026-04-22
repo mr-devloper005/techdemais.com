@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search, Menu, X, User, FileText, Building2, LayoutGrid, Tag, Image as ImageIcon, ChevronRight, Sparkles, MapPin, Plus } from 'lucide-react'
+import { Search, Menu, X, User, FileText, Building2, LayoutGrid, Tag, Image as ImageIcon, ChevronRight, Sparkles, MapPin, Plus, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import { SITE_CONFIG, type TaskKey } from '@/lib/site-config'
@@ -41,12 +41,12 @@ const variantClasses = {
     mobile: 'border-t border-slate-200/70 bg-white/95',
   },
   'editorial-bar': {
-    shell: 'border-b border-[#d7c4b3] bg-[#fff7ee]/90 text-[#2f1d16] backdrop-blur-xl',
-    logo: 'rounded-full border border-[#dbc6b6] bg-white shadow-sm',
-    active: 'bg-[#2f1d16] text-[#fff4e4]',
-    idle: 'text-[#72594a] hover:bg-[#f2e5d4] hover:text-[#2f1d16]',
-    cta: 'rounded-full bg-[#2f1d16] text-[#fff4e4] hover:bg-[#452920]',
-    mobile: 'border-t border-[#dbc6b6] bg-[#fff7ee]',
+    shell: 'border-b border-slate-200/90 bg-white/95 text-slate-900 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl',
+    logo: 'rounded-md border border-slate-200 bg-white shadow-sm',
+    active: 'bg-[#0047AB]/10 text-[#0047AB]',
+    idle: 'text-slate-600 hover:bg-slate-100 hover:text-[#0047AB]',
+    cta: 'rounded-md bg-[#0047AB] text-white shadow-sm hover:bg-[#003a8f]',
+    mobile: 'border-t border-slate-200 bg-white',
   },
   'floating-bar': {
     shell: 'border-b border-transparent bg-transparent text-white',
@@ -97,14 +97,28 @@ export function Navbar() {
   const { isAuthenticated } = useAuth()
   const { recipe } = getFactoryState()
 
-  const navigation = useMemo(() => SITE_CONFIG.tasks.filter((task) => task.enabled && task.key !== 'profile'), [])
+  const navigation = useMemo(
+    () => SITE_CONFIG.tasks.filter((task) => task.enabled && task.key !== 'profile' && task.key === 'article'),
+    [],
+  )
   const primaryNavigation = navigation.slice(0, 5)
+  const publicNavItems = useMemo(() => {
+    const article = SITE_CONFIG.tasks.find((t) => t.enabled && t.key === 'article')
+    return [
+      { name: 'Home', href: '/', icon: Home },
+      ...(article ? [{ name: article.label, href: article.route, icon: taskIcons.article }] : []),
+      { name: 'Search', href: '/search', icon: Search },
+    ]
+  }, [])
   const mobileNavigation = navigation.map((task) => ({
     name: task.label,
     href: task.route,
     icon: taskIcons[task.key] || LayoutGrid,
   }))
-  const primaryTask = SITE_CONFIG.tasks.find((task) => task.key === recipe.primaryTask && task.enabled) || primaryNavigation[0]
+  const primaryTask =
+    SITE_CONFIG.tasks.find((task) => task.key === recipe.primaryTask && task.enabled && task.key === 'article') ||
+    SITE_CONFIG.tasks.find((task) => task.enabled && task.key === 'article') ||
+    primaryNavigation[0]
   const isDirectoryProduct = recipe.homeLayout === 'listing-home' || recipe.homeLayout === 'classified-home'
 
   if (isDirectoryProduct) {
@@ -116,7 +130,7 @@ export function Navbar() {
           <div className="flex min-w-0 items-center gap-4">
             <Link href="/" className="flex shrink-0 items-center gap-3">
               <div className={cn('flex h-12 w-12 items-center justify-center overflow-hidden p-1.5', palette.logo)}>
-                <img src="/favicon.png?v=20260401" alt={`${SITE_CONFIG.name} logo`} width="48" height="48" className="h-full w-full object-contain" />
+                <img src="/favicon.png?v=20260416" alt={`${SITE_CONFIG.name} logo`} width="48" height="48" className="h-full w-full object-contain" />
               </div>
               <div className="min-w-0 hidden sm:block">
                 <span className="block truncate text-xl font-semibold">{SITE_CONFIG.name}</span>
@@ -125,11 +139,11 @@ export function Navbar() {
             </Link>
 
             <div className="hidden items-center gap-5 xl:flex">
-              {primaryNavigation.slice(0, 4).map((task) => {
-                const isActive = pathname.startsWith(task.route)
+              {publicNavItems.map((item) => {
+                const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
                 return (
-                  <Link key={task.key} href={task.route} className={cn('text-sm font-semibold transition-colors', isActive ? 'text-foreground' : palette.nav)}>
-                    {task.label}
+                  <Link key={item.href} href={item.href} className={cn('text-sm font-semibold transition-colors', isActive ? 'text-foreground' : palette.nav)}>
+                    {item.name}
                   </Link>
                 )
               })}
@@ -139,7 +153,7 @@ export function Navbar() {
           <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
             <div className={cn('flex w-full max-w-xl items-center gap-3 rounded-full px-4 py-3', palette.search)}>
               <Search className="h-4 w-4" />
-              <span className="text-sm">Find businesses, spaces, and local services</span>
+              <span className="text-sm">Search articles and archives</span>
               <div className="ml-auto hidden items-center gap-1 text-xs opacity-75 md:flex">
                 <MapPin className="h-3.5 w-3.5" />
                 Local discovery
@@ -165,7 +179,7 @@ export function Navbar() {
                 <Button size="sm" asChild className={cn('rounded-full', palette.cta)}>
                   <Link href="/register">
                     <Plus className="mr-1 h-4 w-4" />
-                    Add Listing
+                    Sign up
                   </Link>
                 </Button>
               </div>
@@ -182,10 +196,10 @@ export function Navbar() {
             <div className="space-y-2 px-4 py-4">
               <div className={cn('mb-3 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium', palette.search)}>
                 <Search className="h-4 w-4" />
-                Find businesses, spaces, and services
+                Search articles and archives
               </div>
-              {mobileNavigation.map((item) => {
-                const isActive = pathname.startsWith(item.href)
+              {publicNavItems.map((item) => {
+                const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
                 return (
                   <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={cn('flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors', isActive ? 'bg-foreground text-background' : palette.post)}>
                     <item.icon className="h-5 w-5" />
@@ -211,7 +225,7 @@ export function Navbar() {
         <div className="flex min-w-0 flex-1 items-center gap-4 lg:gap-7">
           <Link href="/" className="flex shrink-0 items-center gap-3 whitespace-nowrap pr-2">
             <div className={cn('flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden p-1.5', style.logo)}>
-              <img src="/favicon.png?v=20260401" alt={`${SITE_CONFIG.name} logo`} width="48" height="48" className="h-full w-full object-contain" />
+              <img src="/favicon.png?v=20260416" alt={`${SITE_CONFIG.name} logo`} width="48" height="48" className="h-full w-full object-contain" />
             </div>
             <div className="min-w-0 hidden sm:block">
               <span className="block truncate text-xl font-semibold">{SITE_CONFIG.name}</span>
@@ -220,17 +234,22 @@ export function Navbar() {
           </Link>
 
           {isEditorial ? (
-            <div className="hidden min-w-0 flex-1 items-center gap-4 xl:flex">
-              <div className="h-px flex-1 bg-[#d8c8bb]" />
-              {primaryNavigation.map((task) => {
-                const isActive = pathname.startsWith(task.route)
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:gap-2 xl:flex">
+              {publicNavItems.map((item) => {
+                const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
                 return (
-                  <Link key={task.key} href={task.route} className={cn('text-sm font-semibold uppercase tracking-[0.18em] transition-colors', isActive ? 'text-[#2f1d16]' : 'text-[#7b6254] hover:text-[#2f1d16]')}>
-                    {task.label}
+                  <Link
+                    key={`${item.name}-${item.href}`}
+                    href={item.href}
+                    className={cn(
+                      'rounded-md px-3 py-2 text-sm font-semibold tracking-wide transition-colors',
+                      isActive ? 'text-[#0047AB]' : 'text-slate-600 hover:bg-slate-100 hover:text-[#0047AB]',
+                    )}
+                  >
+                    {item.name}
                   </Link>
                 )
               })}
-              <div className="h-px flex-1 bg-[#d8c8bb]" />
             </div>
           ) : isFloating ? (
             <div className="hidden min-w-0 flex-1 items-center gap-2 xl:flex">
@@ -291,12 +310,25 @@ export function Navbar() {
             <NavbarAuthControls />
           ) : (
             <div className="hidden items-center gap-2 md:flex">
-              <Button variant="ghost" size="sm" asChild className="rounded-full px-4">
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button size="sm" asChild className={style.cta}>
-                <Link href="/register">{isEditorial ? 'Subscribe' : isUtility ? 'Post Now' : 'Get Started'}</Link>
-              </Button>
+              {isEditorial ? (
+                <>
+                  <Button variant="ghost" size="sm" asChild className="rounded-md px-3 text-slate-600 hover:text-[#0047AB]">
+                    <Link href="/register">Sign up</Link>
+                  </Button>
+                  <Button size="sm" asChild className={cn('rounded-md px-4 font-semibold', style.cta)}>
+                    <Link href="/login">Login</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" asChild className="rounded-full px-4">
+                    <Link href="/login">Sign In</Link>
+                  </Button>
+                  <Button size="sm" asChild className={style.cta}>
+                    <Link href="/register">{isUtility ? 'Post Now' : 'Get Started'}</Link>
+                  </Button>
+                </>
+              )}
             </div>
           )}
 
@@ -323,10 +355,10 @@ export function Navbar() {
               <Search className="h-4 w-4" />
               Search the site
             </Link>
-            {mobileNavigation.map((item) => {
-              const isActive = pathname.startsWith(item.href)
+            {(isEditorial ? publicNavItems : mobileNavigation).map((item) => {
+              const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
               return (
-                <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={cn('flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors', isActive ? style.active : style.idle)}>
+                <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={cn('flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold transition-colors', isActive ? style.active : style.idle)}>
                   <item.icon className="h-5 w-5" />
                   {item.name}
                 </Link>

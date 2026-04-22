@@ -11,6 +11,23 @@ import { taskIntroCopy } from '@/config/site.content'
 import { getFactoryState } from '@/design/factory/get-factory-state'
 import { TASK_LIST_PAGE_OVERRIDE_ENABLED, TaskListPageOverride } from '@/overrides/task-list-page'
 
+const normalizePath = (href: string) => {
+  const path = href.split('?')[0] || ''
+  if (!path || path === '/') return path || '/'
+  return path.replace(/\/$/, '') || '/'
+}
+
+const filterIntroLinksForEnabledTasks = (links: { label: string; href: string }[]) => {
+  const enabledRoutes = new Set(
+    SITE_CONFIG.tasks.filter((t) => t.enabled).map((t) => normalizePath(t.route)),
+  )
+  return links.filter((link) => {
+    const p = normalizePath(link.href)
+    if (p === '/search' || link.href.startsWith('/search')) return true
+    return enabledRoutes.has(p)
+  })
+}
+
 const taskIcons: Record<TaskKey, any> = {
   listing: Building2,
   article: FileText,
@@ -27,8 +44,10 @@ const taskIcons: Record<TaskKey, any> = {
 const variantShells = {
   'listing-directory': 'bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.08),transparent_24%),linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)]',
   'listing-showcase': 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f9ff_100%)]',
-  'article-editorial': 'bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.08),transparent_20%),linear-gradient(180deg,#fff8ef_0%,#ffffff_100%)]',
-  'article-journal': 'bg-[linear-gradient(180deg,#fffdf9_0%,#f7f1ea_100%)]',
+  'article-editorial':
+    'bg-[radial-gradient(circle_at_0%_0%,rgba(0,71,171,0.07),transparent_32%),linear-gradient(180deg,#f8fafc_0%,#ffffff_55%,#f1f5f9_100%)]',
+  'article-journal':
+    'bg-[radial-gradient(circle_at_100%_0%,rgba(0,119,230,0.05),transparent_28%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]',
   'image-masonry': 'bg-[linear-gradient(180deg,#09101d_0%,#111c2f_100%)] text-white',
   'image-portfolio': 'bg-[linear-gradient(180deg,#07111f_0%,#13203a_100%)] text-white',
   'profile-creator': 'bg-[linear-gradient(180deg,#0a1120_0%,#101c34_100%)] text-white',
@@ -48,6 +67,14 @@ export async function TaskListPage({ task, category }: { task: TaskKey; category
   const posts = await fetchTaskPosts(task, 30)
   const normalizedCategory = category ? normalizeCategory(category) : 'all'
   const intro = taskIntroCopy[task]
+  const introLinksFiltered = intro ? filterIntroLinksForEnabledTasks(intro.links) : []
+  const introLinks =
+    introLinksFiltered.length > 0
+      ? introLinksFiltered
+      : [
+          { label: 'Search archive', href: '/search' },
+          { label: 'Back to home', href: '/' },
+        ]
   const baseUrl = SITE_CONFIG.baseUrl.replace(/\/$/, '')
   const schemaItems = posts.slice(0, 10).map((post, index) => ({
     '@type': 'ListItem',
@@ -57,6 +84,8 @@ export async function TaskListPage({ task, category }: { task: TaskKey; category
   }))
   const { recipe } = getFactoryState()
   const layoutKey = recipe.taskLayouts[task as keyof typeof recipe.taskLayouts] || `${task}-${task === 'listing' ? 'directory' : 'editorial'}`
+  const isArticleListShell =
+    task === 'article' && (layoutKey === 'article-editorial' || layoutKey === 'article-journal')
   const shellClass = variantShells[layoutKey as keyof typeof variantShells] || 'bg-background'
   const Icon = taskIcons[task] || LayoutGrid
 
@@ -71,11 +100,11 @@ export async function TaskListPage({ task, category }: { task: TaskKey; category
       }
     : layoutKey.startsWith('article') || layoutKey.startsWith('sbm')
       ? {
-          muted: 'text-[#72594a]',
-          panel: 'border border-[#dbc6b6] bg-white/90',
-          soft: 'border border-[#dbc6b6] bg-[#fff8ef]',
-          input: 'border border-[#dbc6b6] bg-white text-[#2f1d16]',
-          button: 'bg-[#2f1d16] text-[#fff4e4] hover:bg-[#452920]',
+          muted: 'text-slate-600',
+          panel: 'border border-slate-200 bg-white shadow-sm',
+          soft: 'border border-slate-200 bg-slate-50',
+          input: 'border border-slate-200 bg-white text-slate-900 focus-visible:border-[#0047AB] focus-visible:ring-[#0047AB]/20',
+          button: 'bg-[#0047AB] text-white shadow-sm hover:bg-[#003a8f]',
         }
       : {
           muted: 'text-slate-600',
@@ -147,24 +176,43 @@ export async function TaskListPage({ task, category }: { task: TaskKey; category
         ) : null}
 
         {layoutKey === 'article-editorial' || layoutKey === 'article-journal' ? (
-          <section className="mb-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-            <div>
-              <p className={`text-xs uppercase tracking-[0.3em] ${ui.muted}`}>{taskConfig?.label || task}</p>
-              <h1 className="mt-3 max-w-4xl text-5xl font-semibold tracking-[-0.05em] text-foreground">{taskConfig?.description || 'Latest posts'}</h1>
-              <p className={`mt-5 max-w-2xl text-sm leading-8 ${ui.muted}`}>This reading surface uses slower pacing, stronger typographic hierarchy, and more breathing room so long-form content feels intentional rather than squeezed into a generic feed.</p>
-            </div>
-            <div className={`rounded-[2rem] p-6 ${ui.panel}`}>
-              <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${ui.muted}`}>Reading note</p>
-              <p className={`mt-4 text-sm leading-7 ${ui.muted}`}>Use category filters to jump between topics without collapsing the page into the same repeated card rhythm used by other task types.</p>
-              <form className="mt-5 flex items-center gap-3" action={taskConfig?.route || '#'}>
-                <select name="category" defaultValue={normalizedCategory} className={`h-11 flex-1 rounded-xl px-3 text-sm ${ui.input}`}>
-                  <option value="all">All categories</option>
-                  {CATEGORY_OPTIONS.map((item) => (
-                    <option key={item.slug} value={item.slug}>{item.name}</option>
-                  ))}
-                </select>
-                <button type="submit" className={`h-11 rounded-xl px-4 text-sm font-medium ${ui.button}`}>Apply</button>
-              </form>
+          <section className="mb-12">
+            <div className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-[0_1px_0_rgba(15,23,42,0.04),0_12px_40px_-12px_rgba(15,23,42,0.12)]">
+              <div className="h-1.5 bg-gradient-to-r from-[#0047AB] via-[#0066d4] to-[#0047AB]" aria-hidden />
+              <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.12fr_0.88fr] lg:items-stretch">
+                <div className="flex flex-col justify-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0047AB]">{taskConfig?.label || task}</p>
+                  <h1 className="!font-display mt-3 max-w-4xl text-[2rem] font-semibold leading-[1.12] tracking-tight text-slate-900 sm:text-5xl sm:leading-[1.08]">
+                    {taskConfig?.description || 'Latest posts'}
+                  </h1>
+                  <p className={`mt-5 max-w-2xl text-base leading-8 sm:text-lg ${ui.muted}`}>
+                    Browse essays, guides, and analysis in the same corporate editorial layout as the homepage—clear hierarchy, generous spacing, and blue accent actions.
+                  </p>
+                </div>
+                <div className="flex flex-col justify-center rounded-lg border border-slate-200/80 bg-slate-50/50 p-6 lg:p-7">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Filter</p>
+                  <p className={`mt-3 text-sm leading-7 ${ui.muted}`}>
+                    Narrow by category to scan topics faster; styling matches article cards and story pages.
+                  </p>
+                  <form className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center" action={taskConfig?.route || '#'}>
+                    <select
+                      name="category"
+                      defaultValue={normalizedCategory}
+                      className={`h-11 w-full flex-1 rounded-md px-3 text-sm sm:min-w-0 ${ui.input}`}
+                    >
+                      <option value="all">All categories</option>
+                      {CATEGORY_OPTIONS.map((item) => (
+                        <option key={item.slug} value={item.slug}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="submit" className={`h-11 shrink-0 rounded-md px-5 text-sm font-semibold ${ui.button}`}>
+                      Apply
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           </section>
         ) : null}
@@ -238,17 +286,42 @@ export async function TaskListPage({ task, category }: { task: TaskKey; category
         ) : null}
 
         {intro ? (
-          <section className={`mb-12 rounded-[2rem] p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-8 ${ui.panel}`}>
-            <h2 className="text-2xl font-semibold text-foreground">{intro.title}</h2>
-            {intro.paragraphs.map((paragraph) => (
-              <p key={paragraph.slice(0, 40)} className={`mt-4 text-sm leading-7 ${ui.muted}`}>{paragraph}</p>
-            ))}
-            <div className="mt-4 flex flex-wrap gap-4 text-sm">
-              {intro.links.map((link) => (
-                <a key={link.href} href={link.href} className="font-semibold text-foreground hover:underline">{link.label}</a>
+          isArticleListShell ? (
+            <section className="mb-12 overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-[0_1px_0_rgba(15,23,42,0.04),0_12px_40px_-12px_rgba(15,23,42,0.12)]">
+              <div className="h-1 bg-gradient-to-r from-[#0047AB] to-[#0066d4]" aria-hidden />
+              <div className="p-6 sm:p-8">
+                <h2 className="!font-display text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{intro.title}</h2>
+                {intro.paragraphs.map((paragraph) => (
+                  <p key={paragraph.slice(0, 40)} className={`mt-4 text-sm leading-7 sm:text-base ${ui.muted}`}>
+                    {paragraph}
+                  </p>
+                ))}
+                <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-slate-100 pt-6 text-sm">
+                  {introLinks.map((link) => (
+                    <Link key={link.href} href={link.href} className="font-semibold text-[#0047AB] hover:underline">
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className={`mb-12 rounded-md border border-slate-200/80 p-6 shadow-sm sm:p-8 ${ui.panel}`}>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900">{intro.title}</h2>
+              {intro.paragraphs.map((paragraph) => (
+                <p key={paragraph.slice(0, 40)} className={`mt-4 text-sm leading-7 sm:text-base ${ui.muted}`}>
+                  {paragraph}
+                </p>
               ))}
-            </div>
-          </section>
+              <div className="mt-4 flex flex-wrap gap-4 text-sm">
+                {introLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="font-semibold text-[#0047AB] hover:underline">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )
         ) : null}
 
         <TaskListClient task={task} initialPosts={posts} category={normalizedCategory} />
