@@ -244,13 +244,13 @@ export function ArticleComments({ slug }: { slug: string }) {
   };
 
   return (
-    <section className="mt-12" id="comments">
-      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-        <MessageSquare className="h-4 w-4" />
+    <section className="mt-12 border-t border-slate-200 pt-10" id="comments">
+      <div className="flex items-center gap-2 text-sm font-bold tracking-tight text-slate-900">
+        <MessageSquare className="h-4 w-4 text-[#0047AB]" />
         Comments
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 rounded-2xl border border-border bg-white p-5 shadow-sm">
+      <form onSubmit={handleSubmit} className="mt-6 rounded-md border border-slate-200 bg-slate-50/50 p-5 shadow-sm">
         <div className="space-y-2">
           <label htmlFor="comment-body" className="text-sm font-medium text-foreground">
             Add a comment
@@ -260,7 +260,7 @@ export function ArticleComments({ slug }: { slug: string }) {
             value={commentBody}
             onChange={(event) => setCommentBody(event.target.value)}
             placeholder="Write your comment here"
-            className="min-h-28"
+            className="min-h-28 rounded-md border-slate-200 bg-white"
             maxLength={2000}
             disabled={limitReached}
           />
@@ -286,7 +286,7 @@ export function ArticleComments({ slug }: { slug: string }) {
                 : `Limit resets after ${resetLabel}.`}
             </p>
           </div>
-          <Button type="submit" disabled={limitReached}>
+          <Button type="submit" disabled={limitReached} className="rounded-md bg-[#0047AB] font-semibold hover:bg-[#003a8f]">
             Publish Comment
           </Button>
         </div>
@@ -301,8 +301,8 @@ export function ArticleComments({ slug }: { slug: string }) {
               <div
                 key={comment.id}
                 id={`comment-${comment.id}`}
-                className={`rounded-2xl border p-4 ${
-                  isHighlighted ? "border-primary/50 bg-primary/5" : "border-border bg-white"
+                className={`rounded-md border p-4 ${
+                  isHighlighted ? "border-[#0047AB]/40 bg-[rgba(0,71,171,0.06)]" : "border-slate-200 bg-white"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -334,7 +334,7 @@ export function ArticleComments({ slug }: { slug: string }) {
           })}
         </div>
       ) : (
-        <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+        <div className="mt-6 rounded-md border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
           No comments yet.
         </div>
       )}
@@ -349,7 +349,7 @@ export function ArticleComments({ slug }: { slug: string }) {
               type="button"
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={safePage === 1}
-              className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Previous
             </button>
@@ -357,7 +357,7 @@ export function ArticleComments({ slug }: { slug: string }) {
               type="button"
               onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={safePage === totalPages}
-              className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Next
             </button>
