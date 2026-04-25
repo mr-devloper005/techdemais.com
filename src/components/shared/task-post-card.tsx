@@ -15,6 +15,17 @@ type ListingContent = {
   email?: string
 }
 
+type ArticleCardTheme = {
+  frame: string
+  panel: string
+  badge: string
+  eyebrow: string
+  title: string
+  muted: string
+  link: string
+  wash: string
+}
+
 const stripHtml = (value?: string | null) =>
   (value || '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
@@ -27,7 +38,7 @@ const getExcerpt = (value?: string | null, maxLength = 140) => {
   const text = stripHtml(value)
   if (!text) return ''
   if (text.length <= maxLength) return text
-  return `${text.slice(0, maxLength).trimEnd()}…`
+  return `${text.slice(0, maxLength).trimEnd()}...`
 }
 
 const getContent = (post: SitePost): ListingContent => {
@@ -80,6 +91,45 @@ const cardStyles = {
     badge: 'bg-[#1f2617] text-[#edf5dc]',
   },
 } as const
+
+const ARTICLE_CARD_THEMES: ArticleCardTheme[] = [
+  {
+    frame: 'rounded-[1.4rem] border border-[#dce8fb] bg-white shadow-[0_16px_38px_rgba(0,71,171,0.12)] hover:-translate-y-1 hover:shadow-[0_26px_50px_rgba(0,71,171,0.18)]',
+    panel: 'border-[#dce8fb] bg-[#f7faff]',
+    badge: 'bg-[#0047AB] text-white',
+    eyebrow: 'text-[#0047AB]',
+    title: 'text-[#12243d]',
+    muted: 'text-[#415a78]',
+    link: 'text-[#0047AB]',
+    wash: 'from-[#0047AB]/18 via-transparent to-transparent',
+  },
+  {
+    frame: 'rounded-[1.4rem] border border-[#ecd8c7] bg-[#fffdf9] shadow-[0_16px_38px_rgba(122,62,18,0.14)] hover:-translate-y-1 hover:shadow-[0_26px_50px_rgba(122,62,18,0.2)]',
+    panel: 'border-[#ecd8c7] bg-[#fff6ee]',
+    badge: 'bg-[#7a3e12] text-white',
+    eyebrow: 'text-[#7a3e12]',
+    title: 'text-[#422615]',
+    muted: 'text-[#6b4a34]',
+    link: 'text-[#7a3e12]',
+    wash: 'from-[#a85d25]/18 via-transparent to-transparent',
+  },
+  {
+    frame: 'rounded-[1.4rem] border border-[#cfe9de] bg-white shadow-[0_16px_38px_rgba(13,127,99,0.13)] hover:-translate-y-1 hover:shadow-[0_26px_50px_rgba(13,127,99,0.2)]',
+    panel: 'border-[#cfe9de] bg-[#f3fcf8]',
+    badge: 'bg-[#0d7f63] text-white',
+    eyebrow: 'text-[#0d7f63]',
+    title: 'text-[#123328]',
+    muted: 'text-[#3a6357]',
+    link: 'text-[#0d7f63]',
+    wash: 'from-[#0d7f63]/16 via-transparent to-transparent',
+  },
+]
+
+const getArticleCardTheme = () => {
+  const seed = process.env.NEXT_PUBLIC_SITE_DOMAIN || process.env.NEXT_PUBLIC_SITE_NAME || 'site'
+  const value = [...seed].reduce((acc, char, index) => acc + char.charCodeAt(0) * (index + 1), 0)
+  return ARTICLE_CARD_THEMES[value % ARTICLE_CARD_THEMES.length]
+}
 
 const getVariantForTask = (taskKey: TaskKey) => SITE_THEME.cards[taskKey] || 'listing-elevated'
 
@@ -156,6 +206,36 @@ export function TaskPostCard({
             {content.email ? <span className={`inline-flex items-center gap-1 ${cardTone.muted}`}><Mail className="h-3.5 w-3.5" />{content.email}</span> : null}
           </div>
           <div className={`mt-auto pt-5 text-sm font-semibold ${cardTone.cta}`}>{variant === 'classified' ? 'View offer' : 'View details'}</div>
+        </div>
+      </Link>
+    )
+  }
+
+  if (variant === 'article') {
+    const articleTone = getArticleCardTheme()
+    const summary = getExcerpt(content.description || post.summary, compact ? 130 : 170) || 'Explore this story.'
+
+    return (
+      <Link href={href} className={`group flex h-full flex-col overflow-hidden transition duration-300 ${articleTone.frame}`}>
+        <div className={`relative aspect-[16/10] overflow-hidden border-b ${articleTone.panel}`}>
+          <ContentImage src={image} alt={altText} fill sizes={imageSizes} quality={75} className="object-cover transition-transform duration-500 group-hover:scale-[1.04]" intrinsicWidth={960} intrinsicHeight={720} />
+          <div className={`absolute inset-0 bg-gradient-to-tr ${articleTone.wash}`} />
+          <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
+            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${articleTone.badge}`}>
+              <Tag className="h-3.5 w-3.5" />
+              {category}
+            </span>
+            <ArrowUpRight className={`h-5 w-5 ${articleTone.link}`} />
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col p-5">
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${articleTone.eyebrow}`}>Feature</p>
+          <h3 className={`mt-2 line-clamp-2 text-[1.35rem] font-semibold leading-snug ${articleTone.title}`}>{post.title}</h3>
+          <p className={`mt-3 line-clamp-4 text-sm leading-7 ${articleTone.muted}`}>{summary}</p>
+          <div className="mt-auto pt-4">
+            {content.location ? <span className={`inline-flex items-center gap-1 text-xs ${articleTone.muted}`}><MapPin className="h-3.5 w-3.5" />{content.location}</span> : null}
+            <div className={`mt-2 text-sm font-semibold ${articleTone.link}`}>Read story</div>
+          </div>
         </div>
       </Link>
     )

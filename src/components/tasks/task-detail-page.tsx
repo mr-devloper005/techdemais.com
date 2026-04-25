@@ -1,7 +1,7 @@
 import { ContentImage } from "@/components/shared/content-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Globe, Phone, Tag, Mail, Calendar, Clock } from "lucide-react";
+import { MapPin, Globe, Phone, Tag, Mail } from "lucide-react";
 import { NavbarShell } from "@/components/shared/navbar-shell";
 import { Footer } from "@/components/shared/footer";
 import { TaskPostCard } from "@/components/shared/task-post-card";
@@ -37,6 +37,63 @@ type PostContent = {
   images?: string[];
   latitude?: number | string;
   longitude?: number | string;
+};
+
+type ArticleTheme = {
+  page: string;
+  panel: string;
+  panelRing: string;
+  accentBar: string;
+  accentText: string;
+  summaryBorder: string;
+  authorInitial: string;
+  tagTone: string;
+  linkTone: string;
+  categoryTone: string;
+};
+
+const ARTICLE_THEMES: ArticleTheme[] = [
+  {
+    page: "bg-[radial-gradient(circle_at_top_left,rgba(0,71,171,0.08),transparent_35%),linear-gradient(180deg,#f8fbff_0%,#f5f8fd_100%)]",
+    panel: "bg-white/95",
+    panelRing: "border-[#d9e5f8]",
+    accentBar: "from-[#0047AB] via-[#0066d4] to-[#2f7fff]",
+    accentText: "prose-a:text-[#0047AB]",
+    summaryBorder: "border-[#0047AB]",
+    authorInitial: "text-[#0047AB] from-[#edf4ff] to-[#f7faff]",
+    tagTone: "border-[#dbe7fa] bg-[#f4f8ff] text-[#21497a]",
+    linkTone: "text-[#0047AB]",
+    categoryTone: "text-[#0047AB]",
+  },
+  {
+    page: "bg-[radial-gradient(circle_at_top_right,rgba(129,74,32,0.1),transparent_38%),linear-gradient(180deg,#fffaf5_0%,#fffdf9_100%)]",
+    panel: "bg-[#fffdf8]",
+    panelRing: "border-[#ead8c4]",
+    accentBar: "from-[#7a3e12] via-[#9a5420] to-[#ba6b2c]",
+    accentText: "prose-a:text-[#7a3e12]",
+    summaryBorder: "border-[#9a5420]",
+    authorInitial: "text-[#7a3e12] from-[#fff2e4] to-[#fff8f0]",
+    tagTone: "border-[#ecd9c6] bg-[#fff4e9] text-[#7a3e12]",
+    linkTone: "text-[#7a3e12]",
+    categoryTone: "text-[#7a3e12]",
+  },
+  {
+    page: "bg-[radial-gradient(circle_at_top_left,rgba(7,122,92,0.12),transparent_40%),linear-gradient(180deg,#f4fcf9_0%,#f9fefc_100%)]",
+    panel: "bg-white/95",
+    panelRing: "border-[#cfe7df]",
+    accentBar: "from-[#0d7f63] via-[#0fa073] to-[#22c58c]",
+    accentText: "prose-a:text-[#0d7f63]",
+    summaryBorder: "border-[#0d7f63]",
+    authorInitial: "text-[#0d7f63] from-[#ebfaf4] to-[#f4fdf8]",
+    tagTone: "border-[#cfeadf] bg-[#f0fbf6] text-[#0d7f63]",
+    linkTone: "text-[#0d7f63]",
+    categoryTone: "text-[#0d7f63]",
+  },
+];
+
+const getArticleTheme = (seed: string) => {
+  const value = [...seed].reduce((acc, char, index) => acc + char.charCodeAt(0) * (index + 1), 0);
+  return ARTICLE_THEMES[value % ARTICLE_THEMES.length];
 };
 
 const isValidImageUrl = (value?: string | null) =>
@@ -124,21 +181,6 @@ const buildMapEmbedUrl = (
   return null;
 };
 
-const stripHtmlForWordCount = (html: string) =>
-  html
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const estimateReadingMinutes = (html: string) => {
-  const text = stripHtmlForWordCount(html);
-  if (!text) return null;
-  const words = text.split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 220));
-};
-
 export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: string }) {
   if (TASK_DETAIL_PAGE_OVERRIDE_ENABLED) {
     return await TaskDetailPageOverride({ task, slug });
@@ -171,13 +213,6 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
     (typeof content.author === "string" && content.author.trim()) ||
     post.authorName ||
     "Editorial Team";
-  const articleDate = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString("en-IN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "";
   const postTags = Array.isArray(post.tags) ? post.tags.filter((tag) => typeof tag === "string") : [];
   const location = content.address || content.location;
   const images = getImageUrls(post, content);
@@ -194,8 +229,8 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
     .slice(0, 3);
   const articleUrl = `${SITE_CONFIG.baseUrl.replace(/\/$/, "")}${taskConfig?.route || "/articles"}/${post.slug}`;
   const articleImage = absoluteUrl(images[0]) || absoluteUrl(SITE_CONFIG.defaultOgImage);
-  const readingMinutes = isArticle ? estimateReadingMinutes(articleHtml) : null;
   const authorInitial = articleAuthor.trim().charAt(0).toUpperCase() || "E";
+  const articleTheme = getArticleTheme(`${SITE_CONFIG.domain}:${SITE_CONFIG.name}`);
   const articlesIndexHref = taskConfig?.route || "/articles";
   const categoryBrowseHref = `${articlesIndexHref}?category=${encodeURIComponent(String(category))}`;
 
@@ -269,7 +304,7 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
   }
 
   return (
-    <div className={cn("min-h-screen", isArticle ? "bg-slate-50" : "bg-background")}>
+    <div className={cn("min-h-screen", isArticle ? articleTheme.page : "bg-background")}>
       {isArticle ? <ArticleReadingProgress /> : null}
       <NavbarShell />
       <main
@@ -283,10 +318,12 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
           href={articlesIndexHref}
           className={cn(
             "mb-6 inline-flex items-center text-sm font-medium transition-colors",
-            isArticle ? "text-slate-600 hover:text-[#0047AB]" : "text-muted-foreground hover:text-foreground",
+            isArticle
+              ? cn("text-slate-600 hover:text-slate-900", articleTheme.linkTone)
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
-          ← Back to {taskConfig?.label || "posts"}
+          Back to {taskConfig?.label || "posts"}
         </Link>
 
         <div
@@ -297,13 +334,22 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
         >
           <div className={cn(isClassified ? "space-y-8" : "")}>
             {isArticle ? (
-              <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-[0_1px_0_rgba(15,23,42,0.04),0_12px_40px_-12px_rgba(15,23,42,0.12)]">
-                <div className="h-1.5 bg-gradient-to-r from-[#0047AB] via-[#0066d4] to-[#0047AB]" aria-hidden />
-                <div className="px-5 pb-10 pt-8 sm:px-10 sm:pb-12 sm:pt-10">
-                  <div className="flex flex-col gap-6 sm:gap-8">
+              <div
+                className={cn(
+                  "mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border shadow-[0_1px_0_rgba(15,23,42,0.04),0_18px_45px_-14px_rgba(15,23,42,0.18)]",
+                  articleTheme.panel,
+                  articleTheme.panelRing,
+                )}
+              >
+                <div className={cn("h-2 bg-gradient-to-r", articleTheme.accentBar)} aria-hidden />
+                <div className="px-5 pb-10 pt-8 sm:px-10 sm:pb-14 sm:pt-10">
+                  <div className="flex flex-col gap-7 sm:gap-9">
                     <Link
                       href={categoryBrowseHref}
-                      className="inline-flex w-fit items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-[#0047AB] hover:underline"
+                      className={cn(
+                        "inline-flex w-fit items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] hover:underline",
+                        articleTheme.categoryTone,
+                      )}
                     >
                       <Tag className="h-3.5 w-3.5 opacity-80" aria-hidden />
                       {category}
@@ -313,62 +359,54 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
                       {post.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-4 border-b border-slate-100 pb-6">
-                      <div
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 text-lg font-bold text-[#0047AB]"
-                        aria-hidden
-                      >
-                        {authorInitial}
-                      </div>
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <p className="text-sm font-semibold text-slate-900">
-                          <span className="text-slate-500">By </span>
-                          {articleAuthor}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 sm:text-sm">
-                          {articleDate ? (
-                            <span className="inline-flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
-                              {articleDate}
-                            </span>
-                          ) : null}
-                          {articleDate && readingMinutes ? (
-                            <span className="hidden text-slate-300 sm:inline" aria-hidden>
-                              ·
-                            </span>
-                          ) : null}
-                          {readingMinutes ? (
-                            <span className="inline-flex items-center gap-1.5">
-                              <Clock className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
-                              {readingMinutes} min read
-                            </span>
-                          ) : null}
+                    <div className="grid gap-4 rounded-2xl border border-slate-200/70 bg-slate-50/55 p-4 sm:grid-cols-[0.9fr_1.1fr] sm:p-6">
+                      <div className="flex items-center gap-4 rounded-xl border border-slate-200/80 bg-white/80 p-4">
+                        <div
+                          className={cn(
+                            "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-gradient-to-br text-lg font-bold",
+                            articleTheme.authorInitial,
+                          )}
+                          aria-hidden
+                        >
+                          {authorInitial}
                         </div>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Written by</p>
+                          <p className="text-sm font-semibold text-slate-900">{articleAuthor}</p>
+                          <p className="text-xs text-slate-500">Feature article</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        {articleSummary ? (
+                          <p
+                            className={cn(
+                              "border-l-4 pl-4 text-base font-medium leading-relaxed text-slate-600 sm:text-lg",
+                              articleTheme.summaryBorder,
+                            )}
+                          >
+                            {articleSummary}
+                          </p>
+                        ) : null}
+
+                        {postTags.length ? (
+                          <div className="flex flex-wrap gap-2">
+                            {postTags.map((tag) => (
+                              <Badge
+                                key={tag}
+                                variant="outline"
+                                className={cn("text-xs font-medium", articleTheme.tagTone)}
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
 
-                    {postTags.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {postTags.map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="border-slate-200 bg-slate-50/80 text-xs font-medium text-slate-700"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    {articleSummary ? (
-                      <p className="border-l-4 border-[#0047AB] pl-5 text-lg font-medium leading-relaxed text-slate-600 sm:text-xl sm:leading-relaxed">
-                        {articleSummary}
-                      </p>
-                    ) : null}
-
                     {images[0] ? (
-                      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-slate-100 ring-1 ring-slate-200/80">
+                      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200/80">
                         <ContentImage
                           src={images[0]}
                           alt={`${post.title} featured image`}
@@ -378,12 +416,16 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
                           intrinsicWidth={1600}
                           intrinsicHeight={900}
                         />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
                       </div>
                     ) : null}
 
                     <RichContent
                       html={articleHtml}
-                      className="article-content prose-lg leading-8 prose-headings:scroll-mt-24 prose-p:my-5 prose-h2:my-8 prose-h3:my-6 prose-ul:my-5 prose-ol:my-5 prose-li:my-1.5 prose-a:text-[#0047AB]"
+                      className={cn(
+                        "article-content rounded-2xl border border-slate-200/70 bg-white/70 p-5 prose-lg leading-8 prose-headings:scroll-mt-24 prose-p:my-5 prose-h2:my-8 prose-h3:my-6 prose-ul:my-5 prose-ol:my-5 prose-li:my-1.5 sm:p-8",
+                        articleTheme.accentText,
+                      )}
                     />
 
                     <div className="border-t border-slate-100 pt-8">
@@ -474,7 +516,7 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
                 <h2 className="text-lg font-semibold text-foreground">Highlights</h2>
                 <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                   {content.highlights.map((item) => (
-                    <li key={item}>• {item}</li>
+                    <li key={item}>- {item}</li>
                   ))}
                 </ul>
               </div>
@@ -577,7 +619,7 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
             <>
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#0047AB]">
+                  <p className={cn("text-xs font-bold uppercase tracking-[0.12em]", articleTheme.categoryTone)}>
                     {isArticle ? "Next stories" : "Related"}
                   </p>
                   <h2
@@ -592,7 +634,7 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
                 {taskConfig?.route ? (
                   <Link
                     href={isArticle ? categoryBrowseHref : taskConfig.route}
-                    className="shrink-0 text-sm font-semibold text-[#0047AB] hover:underline"
+                    className={cn("shrink-0 text-sm font-semibold hover:underline", articleTheme.linkTone)}
                   >
                     View all
                   </Link>
@@ -611,16 +653,16 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
               {isArticle ? (
                 <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-6 text-sm text-slate-600">
                   {taskConfig?.route ? (
-                    <Link href={taskConfig.route} className="font-semibold text-[#0047AB] hover:underline">
+                    <Link href={taskConfig.route} className={cn("font-semibold hover:underline", articleTheme.linkTone)}>
                       Browse all {taskConfig.label}
                     </Link>
                   ) : null}
                   <span className="hidden text-slate-300 sm:inline" aria-hidden>
-                    ·
+                    |
                   </span>
                   <Link
                     href={`/search?q=${encodeURIComponent(String(category))}`}
-                    className="font-semibold text-[#0047AB] hover:underline"
+                    className={cn("font-semibold hover:underline", articleTheme.linkTone)}
                   >
                     Search in {category}
                   </Link>
@@ -640,7 +682,7 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
                 <li key={`link-${item.id}`}>
                   <Link
                     href={buildPostUrl(task, item.slug)}
-                    className="font-medium text-[#0047AB] underline-offset-4 hover:underline"
+                    className={cn("font-medium underline-offset-4 hover:underline", articleTheme.linkTone)}
                   >
                     {item.title}
                   </Link>
@@ -650,7 +692,7 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
                 <li>
                   <Link
                     href={taskConfig.route}
-                    className="font-medium text-[#0047AB] underline-offset-4 hover:underline"
+                    className={cn("font-medium underline-offset-4 hover:underline", articleTheme.linkTone)}
                   >
                     Browse all {taskConfig.label}
                   </Link>
@@ -659,7 +701,7 @@ export async function TaskDetailPage({ task, slug }: { task: TaskKey; slug: stri
               <li>
                 <Link
                   href={`/search?q=${encodeURIComponent(String(category))}`}
-                  className="font-medium text-[#0047AB] underline-offset-4 hover:underline"
+                  className={cn("font-medium underline-offset-4 hover:underline", articleTheme.linkTone)}
                 >
                   Search more in {category}
                 </Link>

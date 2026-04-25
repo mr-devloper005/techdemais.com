@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 
 export function ArticleReadingProgress() {
   const [widthPct, setWidthPct] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const onScroll = () => {
       const el = document.documentElement;
       const scrollable = el.scrollHeight - el.clientHeight;
@@ -20,6 +22,10 @@ export function ArticleReadingProgress() {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div
