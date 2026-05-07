@@ -114,9 +114,18 @@ export default function ContactPage() {
               <input className={tone.field} placeholder="Email address" type="email" />
               <input className={tone.field} placeholder="Subject" />
               <textarea className={tone.textarea} placeholder="Share the full context so we can respond with the right next step." />
-              <button type="submit" className={`inline-flex h-11 w-full items-center justify-center sm:w-auto ${tone.action}`}>
-                Send message
-              </button>
+              <div className="flex gap-3">
+                <button type="submit" className={`inline-flex h-11 flex-1 items-center justify-center sm:w-auto ${tone.action}`}>
+                  Send message
+                </button>
+                <a 
+                  href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
+                  className={`inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-6 font-semibold text-[#0047AB] shadow-sm hover:bg-slate-50`}
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email us
+                </a>
+              </div>
             </form>
           </div>
         </section>

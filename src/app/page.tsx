@@ -313,10 +313,6 @@ function EditorialHome({ primaryTask, articlePosts, supportTasks: _supportTasks 
                 <Link href="/about" className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
                   About us
                 </Link>
-                <Link href="/press" className="inline-flex items-center gap-2 text-sm font-semibold text-[#0047AB] underline-offset-4 hover:underline">
-                  Press & media
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
               </div>
             </div>
 

@@ -37,12 +37,7 @@ export default function CareersPage() {
       title="Careers"
       description={`Help readers navigate complex technology with clarity. ${SITE_CONFIG.name} hires editors, reporters, and designers who care about typography as much as truth.`}
       actions={
-        <Button asChild className="rounded-md border-0 bg-white px-5 font-semibold text-[#0047AB] shadow-sm hover:bg-slate-100">
-          <Link href="/press">
-            Hiring & press contact
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
+        null
       }
     >
       <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
@@ -57,9 +52,6 @@ export default function CareersPage() {
               </div>
               <h2 className="mt-3 text-lg font-bold text-slate-900">{role.title}</h2>
               <p className="mt-1 text-sm text-slate-600">{role.location}</p>
-              <Button variant="outline" className="mt-4 rounded-md border-[#0047AB]/30 text-[#0047AB] hover:bg-[#0047AB]/5" asChild>
-                <Link href="/press">Learn more & apply</Link>
-              </Button>
             </div>
           ))}
         </div>

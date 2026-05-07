@@ -99,34 +99,6 @@ export default function AboutPage() {
           ))}
         </div>
       </div>
-
-      <div className="mt-12">
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Editorial leadership</h2>
-          <Link href="/team" className="text-sm font-semibold text-[#0047AB] hover:underline">
-            View full team page
-            <ArrowRight className="ml-1 inline h-4 w-4" />
-          </Link>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {mockTeamMembers.slice(0, 3).map((member) => (
-            <div key={member.id} className="rounded-md border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 border border-slate-200">
-                  <AvatarImage src={member.avatar} alt={member.name} />
-                  <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{member.name}</p>
-                  <p className="text-xs text-slate-500">{member.role}</p>
-                </div>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{member.bio}</p>
-              <p className="mt-2 text-xs text-slate-400">{member.location}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </PageShell>
   );
 }
